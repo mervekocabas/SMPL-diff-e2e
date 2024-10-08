@@ -35,8 +35,9 @@ class HMRHeadCLIFF(nn.Module):
         nn.init.xavier_uniform_(self.decshape.weight, gain=0.01)
         nn.init.xavier_uniform_(self.deccam.weight, gain=0.01)
 
-        if self.backbone.startswith('hrnet'):
-            self.downsample_module = self._make_head()
+        # if self.backbone.startswith('hrnet'):
+            #self.downsample_module = self._make_head()
+        self.downsample_module = self._make_head()
 
         mean_params = np.load(SMPL_MEAN_PARAMS)
         init_pose = torch.from_numpy(mean_params['pose'][:NUM_JOINTS_SMPLX*6]).unsqueeze(0)
