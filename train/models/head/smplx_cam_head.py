@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from .smplx_local import SMPLX
 from ...core import config
+from ...utils.geometry import estimate_translation_fullimg
 
 
 class SMPLXCamHead(nn.Module):
@@ -15,7 +16,7 @@ class SMPLXCamHead(nn.Module):
 
     def forward(self, rotmat, shape, cam, cam_intrinsics,
                 bbox_scale, bbox_center, img_w, img_h,
-                normalize_joints2d=False, trans=False, trans2=False,
+                normalize_joints2d=False, gt_joints2d=None, gt_cam=None, trans=False, trans2=False,
                 learned_scale=None):
 
         smpl_output = self.smplx(
@@ -34,8 +35,21 @@ class SMPLXCamHead(nn.Module):
         batch_size = joints3d.shape[0]
         device = joints3d.device
 
+        # if gt_joints2d is not None:
+        #     import ipdb; ipdb.set_trace()
+        #     with torch.no_grad():
+        #         est_cam = estimate_translation_fullimg(
+        #             S=joints3d[:, :24].cpu(),
+        #             joints_2d=gt_joints2d.cpu(),
+        #             focal_length=torch.stack([cam_intrinsics[:, 0, 0], cam_intrinsics[:, 1, 1]], dim=-1).cpu(),
+        #             img_size=torch.stack([img_w, img_h], dim=-1).cpu(),
+        #             use_all_joints=True,
+        #         )
+        # else:
+        #     est_cam = cam
+        
         cam_t = convert_pare_to_full_img_cam(
-            pare_cam=cam,
+            pare_cam=gt_cam, # cam
             bbox_height=bbox_scale * 200.,
             bbox_center=bbox_center,
             img_w=img_w,
@@ -43,7 +57,7 @@ class SMPLXCamHead(nn.Module):
             focal_length=cam_intrinsics[:, 0, 0],
             crop_res=self.img_res,
         )
-
+        
         joints2d = perspective_projection(
             joints3d,
             rotation=torch.eye(3, device=device).unsqueeze(0).expand(batch_size, -1, -1),
@@ -85,3 +99,22 @@ def convert_pare_to_full_img_cam(
     cam_t = torch.stack([tx + cx, ty + cy, tz], dim=-1)
 
     return cam_t
+
+
+def convert_full_img_cam_t_to_weak_cam(
+        cam_t, bbox_height, bbox_center,
+        img_w, img_h, focal_length, crop_res=224):
+
+    res = crop_res
+    r = bbox_height / res
+    
+    s = 2 * focal_length / (r * res * cam_t[:, 2])
+    
+    # cam_t = [tx + cx, ty + cy, tz]
+    cx = 2 * (bbox_center[:, 0] - (img_w / 2.)) / (s * bbox_height)
+    cy = 2 * (bbox_center[:, 1] - (img_h / 2.)) / (s * bbox_height)
+    tx = cam_t[:, 0] - cx
+    ty = cam_t[:, 1] - cy
+
+    cam = torch.stack([s, tx, ty], dim=-1)
+    return cam
