@@ -87,7 +87,7 @@ class SDPoseTrainer(pl.LightningModule):
         self.inference_noise_scheduler = DDIMScheduler.from_pretrained("stabilityai/stable-diffusion-2", subfolder="scheduler")
 
     def training_step(self, batch, batch_nb, dataloader_nb=0):
-        
+        import ipdb; ipdb.set_trace()
         # GT data
         images = batch['img']
         gt_betas = batch['betas']
