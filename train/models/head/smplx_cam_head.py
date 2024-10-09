@@ -49,7 +49,7 @@ class SMPLXCamHead(nn.Module):
         #     est_cam = cam
         
         cam_t = convert_pare_to_full_img_cam(
-            pare_cam=gt_cam, # cam
+            pare_cam=cam,
             bbox_height=bbox_scale * 200.,
             bbox_center=bbox_center,
             img_w=img_w,

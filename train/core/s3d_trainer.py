@@ -40,7 +40,7 @@ class SDPoseTrainer(pl.LightningModule):
         self.smplx = smplx.SMPLX(config.SMPLX_MODEL_DIR, batch_size=self.hparams.DATASET.BATCH_SIZE, create_transl=False, num_betas=11)
         self.add_module('smplx', self.smplx)
         self.smpl = smplx.SMPL(config.SMPL_MODEL_DIR, batch_size=self.hparams.DATASET.BATCH_SIZE, create_transl=False)
-        import ipdb; ipdb.set_trace()
+        
         # Initialize the training datasets only in training mode
         if not hparams.RUN_TEST:
             self.train_ds = self.train_dataset()
@@ -85,10 +85,10 @@ class SDPoseTrainer(pl.LightningModule):
         # bedlam seed 
         self.generator.manual_seed(1234)
         self.inference_noise_scheduler = DDIMScheduler.from_pretrained("stabilityai/stable-diffusion-2", subfolder="scheduler")
-        import ipdb; ipdb.set_trace()
+        
 
     def training_step(self, batch, batch_nb, dataloader_nb=0):
-        import ipdb; ipdb.set_trace()
+      
         # GT data
         images = batch['img']
         gt_betas = batch['betas']
