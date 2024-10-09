@@ -18,4 +18,4 @@ inputs = pipe.tokenizer(
 embeddings = pipe.text_encoder(inputs.input_ids.to(pipe.device))[0]
 
 print("Saving text embedding to 'data/empty_text_embedding.pt'")
-torch.save(embeddings, './data/empty_text_embedding.pt')
+torch.save(embeddings, 'datax/empty_text_embedding.pt')
