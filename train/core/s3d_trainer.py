@@ -20,7 +20,6 @@ from ..utils.image_utils import denormalize_images
 from ..utils.eval_utils import reconstruction_error
 from ..utils.renderer_cam import render_image_group
 from ..utils.geometry import estimate_translation_cam
-from ..models.sdpose import SDPose, pyramid_noise_like, pyramid_noise_like_annealed
 from ..models.head.smplx_cam_head import convert_full_img_cam_t_to_weak_cam, convert_pare_to_full_img_cam
 from diffusers import DDIMScheduler
 
