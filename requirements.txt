@@ -60,9 +60,9 @@ pytorch-lightning==1.5.9
 torchvision
 diffusers
 ipdb
-xformers --index-url https://download.pytorch.org/whl/cu121
 transformers
 accelerate
 git+https://github.com/mkocabas/yolov3-pytorch.git
 git+https://github.com/mkocabas/multi-person-tracker.git
+xformers --index-url https://download.pytorch.org/whl/cu121
 # conda install -c conda-forge libstdcxx-ng
