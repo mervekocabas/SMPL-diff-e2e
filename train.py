@@ -54,11 +54,11 @@ def train(hparams, fast_dev_run=False):
         mode='min',
     )
     trainer = pl.Trainer(
-        gpus=4,
+        gpus=-1,
         strategy="ddp",
         logger=experiment_loggers,
         max_epochs=hparams.TRAINING.MAX_EPOCHS,
-        callbacks=[ckpt_callback, ProgressBar(refresh_rate=200)],
+        callbacks=[ckpt_callback, ProgressBar(refresh_rate=100)],
         default_root_dir=log_dir,
         check_val_every_n_epoch=hparams.TRAINING.CHECK_VAL_EVERY_N_EPOCH,
         num_sanity_val_steps=0,

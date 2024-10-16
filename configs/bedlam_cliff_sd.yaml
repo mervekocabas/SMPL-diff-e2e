@@ -15,9 +15,9 @@ DATASET:
 EXP_NAME: bedlam_cam_ready
 LOG_DIR: logs
 OPTIMIZER:
-  LR: 1e-4
-  TYPE: adam
-  WD: 0.0
+  LR: 5e-5
+  TYPE: adamw
+  WD: 5e-5
 MODEL:
   BACKBONE: sd2_0
   BETA_LOSS_WEIGHT: 0.001

@@ -388,6 +388,13 @@ class HMRTrainer(pl.LightningModule):
     def configure_optimizers(self):
         if self.hparams.OPTIMIZER.TYPE == 'sgd':
             return torch.optim.SGD(self.parameters(), lr=self.hparams.OPTIMIZER.LR, momentum=0.9)
+        elif self.hparams.OPTIMIZER.TYPE == 'AdamW':
+            print('Using AdamW optimizer')
+            return torch.optim.AdamW(
+                self.parameters(),
+                lr=self.hparams.OPTIMIZER.LR,
+                weight_decay=self.hparams.OPTIMIZER.WD,
+            )
         else:
             return torch.optim.Adam(
                 self.parameters(),
