@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import torch
+import torch.nn as nn
 from torch.nn.functional import interpolate
 
 import gc
@@ -303,6 +304,8 @@ class DIFT(torch.nn.Module):
             self.feat_dim = feat_dims[layer]
             self.multilayers = [layer]
 
+        self.out_conv = nn.Conv2d(1280, 720, 3, stride=2, padding=1)
+
         # define layer name (for logging)
         self.layer = "-".join(str(_x) for _x in self.multilayers)
 
@@ -331,4 +334,6 @@ class DIFT(torch.nn.Module):
         elif self.output == "dense":
             spatial = [interpolate(x.contiguous(), (h, w)) for x in spatial]
 
-        return spatial[0] if len(spatial) == 1 else spatial
+        features = spatial[0] if len(spatial) == 1 else spatial
+
+        return self.out_conv(features)

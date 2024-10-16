@@ -106,7 +106,6 @@ class HMR(nn.Module):
             bbox_info[:, 2] = bbox_info[:, 2] / cam_intrinsics[:, 0, 0]  # [-1, 1]
             bbox_info = bbox_info.cuda().float()
             features = self.backbone(images)
-            import ipdb; ipdb.set_trace()
             hmr_output = self.head(features, bbox_info=bbox_info)
         else:
             features = self.backbone(images)
