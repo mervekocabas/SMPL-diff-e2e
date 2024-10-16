@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from .backbone.utils import get_backbone_info
 from .backbone.hrnet import hrnet_w32, hrnet_w48
+from .backbone.sd import DIFT
 from .head.hmr_head_orig import HMRHeadOrig
 from .head.hmr_head_cliff import HMRHeadCLIFF
 from .head.hmr_head_cliff_smpl import HMRHeadCLIFFSMPL
@@ -37,9 +38,7 @@ class HMR(nn.Module):
                 use_conv=(use_conv == 'conv'),
             ) 
         elif backbone.startswith('sd2_0'):
-            # TODO
-            import ipdb; ipdb.set_trace()
-        
+            self.backbone = DIFT()
         else:
             pass
         # Run on real images used in original CLIFF
@@ -107,6 +106,7 @@ class HMR(nn.Module):
             bbox_info[:, 2] = bbox_info[:, 2] / cam_intrinsics[:, 0, 0]  # [-1, 1]
             bbox_info = bbox_info.cuda().float()
             features = self.backbone(images)
+            import ipdb; ipdb.set_trace()
             hmr_output = self.head(features, bbox_info=bbox_info)
         else:
             features = self.backbone(images)
