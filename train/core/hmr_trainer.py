@@ -17,6 +17,7 @@ from ..utils.image_utils import denormalize_images
 from ..utils.renderer_cam import render_image_group
 from ..utils.renderer import Renderer
 from ..models.hmr import HMR
+from ..models.sdhmr import SDHMR
 from ..losses.losses import HMRLoss
 
 
@@ -26,12 +27,20 @@ class HMRTrainer(pl.LightningModule):
         super(HMRTrainer, self).__init__()
 
         self.hparams.update(hparams)
-        self.model = HMR(
-            backbone=self.hparams.MODEL.BACKBONE,
-            img_res=self.hparams.DATASET.IMG_RES,
-            pretrained_ckpt=self.hparams.TRAINING.PRETRAINED_CKPT,
-            hparams=self.hparams,
-        )
+        if self.hparams.MODEL.TYPE == 'sdhmr':
+            self.model = SDHMR(
+                backbone=self.hparams.MODEL.BACKBONE,
+                img_res=self.hparams.DATASET.IMG_RES,
+                pretrained_ckpt=self.hparams.TRAINING.PRETRAINED_CKPT,
+                hparams=self.hparams,
+            )
+        else:
+            self.model = HMR(
+                backbone=self.hparams.MODEL.BACKBONE,
+                img_res=self.hparams.DATASET.IMG_RES,
+                pretrained_ckpt=self.hparams.TRAINING.PRETRAINED_CKPT,
+                hparams=self.hparams,
+            )
         self.loss_fn = HMRLoss(hparams=self.hparams)
 
         self.smplx = smplx.SMPLX(config.SMPLX_MODEL_DIR, batch_size=self.hparams.DATASET.BATCH_SIZE, create_transl=False, num_betas=11)

@@ -19,6 +19,7 @@ OPTIMIZER:
   TYPE: adam
   WD: 0.0
 MODEL:
+  TYPE: 'sdhmr'
   BACKBONE: hrnet_w48-conv
   BETA_LOSS_WEIGHT: 0.001
   JOINT_LOSS_WEIGHT: 5.0

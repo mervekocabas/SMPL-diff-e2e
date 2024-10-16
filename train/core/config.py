@@ -197,6 +197,7 @@ hparams.TESTING.MESH_VIS = False
 
 # MODEL  hparams
 hparams.MODEL = CN()
+hparams.MODEL.TYPE = 'hmr' # 'sdhmr'
 hparams.MODEL.BACKBONE = 'resnet50'
 hparams.MODEL.SHAPE_LOSS_WEIGHT = 0.
 hparams.MODEL.JOINT_LOSS_WEIGHT = 5.
