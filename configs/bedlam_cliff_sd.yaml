@@ -1,5 +1,5 @@
 DATASET:
-  BATCH_SIZE: 4
+  BATCH_SIZE: 32
   CROP_FACTOR: 0.5
   CROP_PROB: 0.2
   DATASETS_AND_RATIOS: 'zoom-suburbd'
@@ -15,7 +15,7 @@ DATASET:
 EXP_NAME: bedlam_cam_ready
 LOG_DIR: logs
 OPTIMIZER:
-  LR: 5.0e-05
+  LR: 1e-3
   TYPE: adam
   WD: 0.0
 MODEL:
@@ -27,7 +27,7 @@ MODEL:
   POSE_LOSS_WEIGHT: 1.0
   SHAPE_LOSS_WEIGHT: 1.0
 TESTING:
-  FP_VIS: false
+  FP_VIS: true
   MESH_VIS: false
 TRAINING:
   CHECK_VAL_EVERY_N_EPOCH: 1
