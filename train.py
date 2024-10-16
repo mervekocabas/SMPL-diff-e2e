@@ -54,7 +54,8 @@ def train(hparams, fast_dev_run=False):
         mode='min',
     )
     trainer = pl.Trainer(
-        gpus=1,
+        gpus=4,
+        strategy="ddp",
         logger=experiment_loggers,
         max_epochs=hparams.TRAINING.MAX_EPOCHS,
         callbacks=[ckpt_callback, ProgressBar(refresh_rate=200)],

@@ -1,11 +1,11 @@
 DATASET:
-  BATCH_SIZE: 32
+  BATCH_SIZE: 64
   CROP_FACTOR: 0.5
   CROP_PROB: 0.2
   DATASETS_AND_RATIOS: 'zoom-suburbd'
   MESH_COLOR: pinkish
   NOISE_FACTOR: 0.4
-  NUM_WORKERS: 4
+  NUM_WORKERS: 8
   PIN_MEMORY: true
   SCALE_FACTOR: 0.25
   SHUFFLE_TRAIN: true
@@ -15,7 +15,7 @@ DATASET:
 EXP_NAME: bedlam_cam_ready
 LOG_DIR: logs
 OPTIMIZER:
-  LR: 1e-3
+  LR: 1e-4
   TYPE: adam
   WD: 0.0
 MODEL:
