@@ -13,6 +13,14 @@ from ..utils.rotations import axis_angle_to_rotation_6d, rotation_6d_to_matrix
 from ..core.config import SMPL_MEAN_PARAMS
 from ..core.constants import NUM_JOINTS_SMPLX, BN_MOMENTUM
 
+from .backbone.utils import get_backbone_info
+from .backbone.hrnet import hrnet_w32, hrnet_w48
+from .head.hmr_head_orig import HMRHeadOrig
+from .head.hmr_head_cliff import HMRHeadCLIFF
+from .head.hmr_head_cliff_smpl import HMRHeadCLIFFSMPL
+from .head.smpl_head import SMPLHead
+from ..core.config import PRETRAINED_CKPT_FOLDER
+
 
 class SDPose(nn.Module):
     def __init__(self, hparams=None, precision=torch.float32, img_res=224,):
@@ -31,25 +39,34 @@ class SDPose(nn.Module):
         self.vae = pipe.vae
         del self.vae.decoder
         self.vae.requires_grad_(False)
-        
-        if hparams.DATASET.proj_verts:
-            self.smpl = SMPLXCamHeadProj(img_res=img_res) 
+
+        # Run on real images used in original CLIFF
+        if hparams.TRIAL.version == 'real':
+            if hparams.TRIAL.bedlam_bbox:
+                self.head = HMRHeadCLIFFSMPL(
+                    num_input_features=,
+                )
+                self.smpl = SMPLCamHead(img_res=img_res)
+
         else:
-            self.smpl = SMPLXCamHead(img_res=img_res)
+            if hparams.TRIAL.bedlam_bbox:
+                self.head = HMRHeadCLIFF(
+                    num_input_features=,
+                )
+                if hparams.DATASET.proj_verts:
+                    self.smpl = SMPLXCamHeadProj(img_res=img_res) 
+                else:
+                    self.smpl = SMPLXCamHead(img_res=img_res)
+
                     
         self.noise_scheduler = pipe.scheduler
         self.unet = UNet2DConditionModel.from_pretrained(
             "stabilityai/stable-diffusion-2", 
             torch_dtype=precision, 
             subfolder="unet",
-            in_channels=4, out_channels=1,
             low_cpu_mem_usage=False,
             ignore_mismatched_sizes=True,
         )
-        print('Initializing the unet conv_out with pretrained weights')
-        
-        self.unet.conv_out.weight.data[:] = pipe.unet.conv_out.weight.data.mean(dim=0, keepdim=True).detach().clone() 
-        self.unet.conv_out.bias.data[:] = pipe.unet.conv_out.bias.data.mean(dim=0, keepdim=True).detach().clone() 
         
         self.unet.requires_grad_(True)
         # self.unet.enable_attention_slicing(1)
@@ -115,7 +132,7 @@ class SDPose(nn.Module):
         gt_cam=None,
     ):
         
-        batch_size = pred_smplx_params['pred_pose'].shape[0] # images.shape[0]
+        batch_size = pred_smplx_params.shape[0] # images.shape[0]
 
         if fl is not None:
             # GT focal length
@@ -131,13 +148,26 @@ class SDPose(nn.Module):
         cam_intrinsics[:, 1, 1] = focal_length[:, 1]
         cam_intrinsics[:, 0, 2] = img_w/2.
         cam_intrinsics[:, 1, 2] = img_h/2.
+
+        if self.hparams.TRIAL.bedlam_bbox:
+            # Taken from CLIFF repository
+            cx, cy = bbox_center[:, 0], bbox_center[:, 1]
+            b = bbox_scale * 200
+            bbox_info = torch.stack([cx - img_w / 2., cy - img_h / 2., b],
+                                    dim=-1)
+            bbox_info[:, :2] = bbox_info[:, :2] / cam_intrinsics[:, 0, 0].unsqueeze(-1)   # [-1, 1]
+            bbox_info[:, 2] = bbox_info[:, 2] / cam_intrinsics[:, 0, 0]  # [-1, 1]
+            bbox_info = bbox_info.cuda().float()
+            hmr_output = self.head(pred_smplx_params, bbox_info=bbox_info)
+        else:
+            hmr_output = self.head(pred_smplx_params)
         
         if self.hparams.TRIAL.bedlam_bbox:
             # Assuming prediction are in camera coordinate
             smpl_output = self.smpl(
-                rotmat=pred_smplx_params['pred_pose'],
-                shape=pred_smplx_params['pred_shape'],
-                cam=pred_smplx_params['pred_cam'],
+                rotmat=hmr_output['pred_pose'],
+                shape=hmr_output['pred_shape'],
+                cam=hmr_output['pred_cam'],
                 cam_intrinsics=cam_intrinsics,
                 bbox_scale=bbox_scale,
                 bbox_center=bbox_center,
@@ -149,29 +179,11 @@ class SDPose(nn.Module):
             )
         else:
             smpl_output = self.smpl(
-                rotmat=pred_smplx_params['pred_pose'],
-                shape=pred_smplx_params['pred_shape'],
-                cam=pred_smplx_params['pred_cam'],
+                rotmat=hmr_output['pred_pose'],
+                shape=hmr_output['pred_shape'],
+                cam=hmr_output['pred_cam'],
                 normalize_joints2d=True,
             )
         smpl_output.update(pred_smplx_params)
         return smpl_output
-    
-    def decode_smplx_params(self, smplx_latents):
-        batch_size = smplx_latents.shape[0]
-        smplx_latents_vec = smplx_latents.reshape(batch_size, -1)
-        
-        res_pred_pose_6d = smplx_latents_vec[:, :132]
-        res_pred_shape = smplx_latents_vec[:, 132:132+11]
-        res_pred_cam = smplx_latents_vec[:, 132+11:132+11+3]
-        
-        pred_rotmat = rotation_6d_to_matrix(pred_pose_6d.reshape(-1, 6)).reshape(batch_size, -1, 3, 3)
-        pred_smplx_params = {
-            'pred_pose': pred_rotmat,
-            'pred_cam': pred_cam,
-            'pred_shape': pred_shape,
-            'pred_pose_6d': pred_pose_6d,
-        }
-        
-        return pred_smplx_params
     
