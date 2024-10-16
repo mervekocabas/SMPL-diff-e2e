@@ -17,7 +17,6 @@ from ..utils.image_utils import denormalize_images
 from ..utils.renderer_cam import render_image_group
 from ..utils.renderer import Renderer
 from ..models.hmr import HMR
-from ..models.sdhmr import SDHMR
 from ..losses.losses import HMRLoss
 
 
