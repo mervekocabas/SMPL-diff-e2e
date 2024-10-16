@@ -54,7 +54,7 @@ def train(hparams, fast_dev_run=False):
         mode='min',
     )
     trainer = pl.Trainer(
-        # accelarator='gpu',
+        accelerator='gpu',
         devices=-1,
         logger=experiment_loggers,
         max_epochs=hparams.TRAINING.MAX_EPOCHS,
@@ -63,7 +63,7 @@ def train(hparams, fast_dev_run=False):
         check_val_every_n_epoch=hparams.TRAINING.CHECK_VAL_EVERY_N_EPOCH,
         num_sanity_val_steps=0,
         fast_dev_run=fast_dev_run,
-        resume_from_checkpoint=hparams.TRAINING.RESUME,
+        # resume_from_checkpoint=hparams.TRAINING.RESUME,
     )
 
     logger.info('*** Started training ***')
