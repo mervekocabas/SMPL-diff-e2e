@@ -161,7 +161,7 @@ class SDFeaturizer(torch.nn.Module):
     def __init__(self, sd_id="stabilityai/stable-diffusion-2-1"):
         super().__init__()
 
-        breakpoint()
+        # breakpoint()
         unet = MyUNet2DConditionModel.from_pretrained(sd_id, subfolder="unet")
         onestep_pipe = OneStepSDPipeline.from_pretrained(
             sd_id, unet=unet, safety_checker=None
