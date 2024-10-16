@@ -54,7 +54,7 @@ def train(hparams, fast_dev_run=False):
         mode='min',
     )
     trainer = pl.Trainer(
-        accelarator='gpu',
+        # accelarator='gpu',
         devices=-1,
         logger=experiment_loggers,
         max_epochs=hparams.TRAINING.MAX_EPOCHS,
