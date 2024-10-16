@@ -36,7 +36,10 @@ class HMR(nn.Module):
                 downsample=True,
                 use_conv=(use_conv == 'conv'),
             ) 
-        # Todo support resnet
+        elif backbone.startswith('sd2_0'):
+            # TODO
+            import ipdb; ipdb.set_trace()
+        
         else:
             pass
         # Run on real images used in original CLIFF
