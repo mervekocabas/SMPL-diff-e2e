@@ -104,7 +104,8 @@ class HMRTrainer(pl.LightningModule):
         if self.training_wp_vis:
             self.weak_perspective_projection(batch, pred, batch_nb, dataloader_nb)
         if self.training_fp_vis:
-            self.perspective_projection(batch, pred, batch_nb)
+            if self.global_step % 10 == 0:
+                self.perspective_projection(batch, pred, batch_nb)
         if self.training_mesh_vis:
             self.visualize_mesh(batch, pred, batch_nb, dataloader_nb, pred['smplx_vertices'], batch['vertices'])
 
