@@ -277,7 +277,7 @@ class DIFT(torch.nn.Module):
     def __init__(
         self,
         model_id="stabilityai/stable-diffusion-2-1",
-        time_step=250,
+        time_step=1000,
         output="dense",
         layer=1,
         return_multilayer=False,
