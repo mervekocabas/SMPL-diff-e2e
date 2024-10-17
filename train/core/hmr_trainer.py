@@ -157,8 +157,8 @@ class HMRTrainer(pl.LightningModule):
             gt_cam_vertices = batch['vertices']
             gt_cam_vertices = gt_cam_vertices.to("cuda:0")
             gt_keypoints_3d = batch['joints']
-            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1), pred_cam_vertices)
-            pred_keypoints_3d = torch.matmul(self.smpl.J_regressor, pred_cam_vertices)
+            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1).to("cuda:0"), pred_cam_vertices)
+            pred_keypoints_3d = torch.matmul(self.smpl.J_regressor.to("cuda:0"), pred_cam_vertices)
             gt_pelvis = (gt_keypoints_3d[:, [1], :] + gt_keypoints_3d[:, [2], :]) / 2.0
             pred_pelvis = (pred_keypoints_3d[:, [1], :] + pred_keypoints_3d[:, [2], :]) / 2.0
             pred_keypoints_3d = pred_keypoints_3d - pred_pelvis
@@ -172,9 +172,9 @@ class HMRTrainer(pl.LightningModule):
             gt_keypoints_3d = batch['joints']
             gt_keypoints_3d = gt_keypoints_3d[:, joint_mapper_gt, :-1]
             gt_keypoints_3d = gt_keypoints_3d - ((gt_keypoints_3d[:, 2, :] + gt_keypoints_3d[:, 3, :]) / 2).unsqueeze(1)
-            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1).cuda(), pred_cam_vertices)
+            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1).to("cuda:0"), pred_cam_vertices)
             # # Get 14 predicted joints from the mesh
-            pred_keypoints_3d = torch.matmul(J_regressor_batch_smpl, pred_cam_vertices)
+            pred_keypoints_3d = torch.matmul(J_regressor_batch_smpl.to("cuda:0"), pred_cam_vertices)
             # pred_pelvis = pred_keypoints_3d[:, [0], :].clone()
             pred_keypoints_3d = pred_keypoints_3d[:, joint_mapper_h36m, :]
             # pred_keypoints_3d = pred_keypoints_3d - pred_pelvis
@@ -184,15 +184,15 @@ class HMRTrainer(pl.LightningModule):
             gt_cam_vertices = batch['vertices']
             gt_cam_vertices = gt_cam_vertices.to("cuda:0")
             # Get 14 predicted joints from the mesh
-            gt_keypoints_3d = torch.matmul(J_regressor_batch_smpl, gt_cam_vertices)
+            gt_keypoints_3d = torch.matmul(J_regressor_batch_smpl.to("cuda:0"), gt_cam_vertices)
             gt_pelvis = gt_keypoints_3d[:, [0], :].clone()
             gt_keypoints_3d = gt_keypoints_3d[:, joint_mapper_h36m, :]
             gt_keypoints_3d = gt_keypoints_3d - gt_pelvis
             gt_cam_vertices = gt_cam_vertices - gt_pelvis
             # Convert predicted vertices to SMPL Fromat
-            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1), pred_cam_vertices)
+            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1).to("cuda:0"), pred_cam_vertices)
             # Get 14 predicted joints from the mesh
-            pred_keypoints_3d = torch.matmul(J_regressor_batch_smpl, pred_cam_vertices)
+            pred_keypoints_3d = torch.matmul(J_regressor_batch_smpl.to("cuda:0"), pred_cam_vertices)
             pred_pelvis = pred_keypoints_3d[:, [0], :].clone()
             pred_keypoints_3d = pred_keypoints_3d[:, joint_mapper_h36m, :]
             pred_keypoints_3d = pred_keypoints_3d - pred_pelvis
