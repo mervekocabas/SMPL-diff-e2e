@@ -82,7 +82,7 @@ def draw_skeleton(image, kp_2d, dataset='common', unnormalize=True,
     # common_lr = [0,0,1,1,0,0,0,0,1,0,0,1,1,1,0]
     for idx, pt in enumerate(kp_2d):
         # if pt[2] > 0: # if visible
-        print('drawn point',pt[0],pt[1])
+        # print('drawn point',pt[0],pt[1])
         cv2.circle(image, (pt[0], pt[1]), 5, pcolor, -1)
         if j_error is not None:
             cv2.putText(image, f'{j_error[idx]:.1f}', (pt[0]+3, pt[1]-3), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0))
