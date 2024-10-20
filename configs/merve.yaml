@@ -38,7 +38,7 @@ TRAINING:
   RESUME: null
   TEST_BEFORE_TRAINING: false
   WP_VIS: false
-  FP_VIS: true
+  FP_VIS: false
 TRIAL:
   bedlam_bbox: true
   criterion: mse
