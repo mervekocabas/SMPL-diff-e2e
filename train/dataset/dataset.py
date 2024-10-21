@@ -14,17 +14,17 @@ from ..core.config import DATASET_FILES, DATASET_FOLDERS
 from ..utils.image_utils import crop, flip_img, flip_pose, flip_kp, transform, rot_aa, random_crop, read_img
 from smplx import SMPL, SMPLX
 
-class DatasetSDPose(Dataset):
+class DatasetHMR(Dataset):
 
     def __init__(self, options, dataset, use_augmentation=True, is_train=True):
-        super(DatasetSDPose, self).__init__()
+        super(DatasetHMR, self).__init__()
 
         self.dataset = dataset
         self.is_train = is_train
         self.options = options
         self.img_dir = DATASET_FOLDERS[dataset]
-        # self.normalize_img = Normalize(mean=constants.IMG_NORM_MEAN,
-        #                                std=constants.IMG_NORM_STD)
+        self.normalize_img = Normalize(mean=constants.IMG_NORM_MEAN,
+                                       std=constants.IMG_NORM_STD)
         self.data = np.load(DATASET_FILES[is_train][dataset],
                             allow_pickle=True)
         self.imgname = self.data['imgname']
@@ -116,17 +116,6 @@ class DatasetSDPose(Dataset):
             self.length = int(self.scale.shape[0] * self.options.CROP_PERCENT)
         else:
             self.length = self.scale.shape[0]
-        if 'cam_int' in self.data:
-            self.cam_int = self.data['cam_int']
-        else:
-            self.cam_int = np.zeros((self.imgname.shape[0], 3, 3))
-        if 'cam_ext' in self.data:
-            self.cam_ext = self.data['cam_ext']
-        else:
-            self.cam_ext = np.zeros((self.imgname.shape[0], 4, 4))
-        if 'trans_cam' in self.data:
-            self.trans_cam = self.data['trans_cam']
-
         logger.info(f'Loaded {self.dataset} dataset, num samples {self.length}')
 
     def scale_aug(self):
@@ -229,7 +218,7 @@ class DatasetSDPose(Dataset):
             print(E)
 
         img = torch.from_numpy(img).float()
-        item['img'] = img # self.normalize_img(img)
+        item['img'] = self.normalize_img(img)
         item['pose'] = torch.from_numpy(pose).float()
         item['betas'] = torch.from_numpy(self.betas[index]).float()
         item['imgname'] = imgname
@@ -293,15 +282,6 @@ class DatasetSDPose(Dataset):
                 item['vertices'] = torch.zeros((6890, 3)).float()
             else:
                 item['vertices'] = torch.zeros((6890, 3)).float()
-                if 'cam_int' in self.data.files:
-                    item['focal_length'] = torch.tensor([self.cam_int[index][0, 0], self.cam_int[index][1, 1]])
-                if self.dataset == '3dpw-train-smplx':
-                    item['focal_length'] = torch.tensor([1961.1, 1969.2])
-                # Will be 0 for 3dpw-train-smplx
-                item['cam_ext'] = self.cam_ext[index]
-                item['translation'] = self.cam_ext[index][:, 3]
-                if 'trans_cam' in self.data.files:
-                    item['translation'][:3] += self.trans_cam[index]
 
         if not self.is_train:
             item['dataset_index'] = self.options.VAL_DS.split('_').index(self.dataset)

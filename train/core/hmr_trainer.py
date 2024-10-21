@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader, ConcatDataset
 from . import constants
 from . import config
 from .constants import NUM_JOINTS_SMPLX
-from ..dataset.dataset import DatasetHMR
+from ..dataset.dataset_sd import DatasetSDPose
 from ..utils.train_utils import set_seed
 from ..utils.eval_utils import reconstruction_error
 from ..utils.image_utils import denormalize_images
@@ -413,7 +413,7 @@ class HMRTrainer(pl.LightningModule):
     def train_dataset(self):
         options = self.hparams.DATASET
         dataset_names = options.DATASETS_AND_RATIOS.split('_')
-        dataset_list = [DatasetHMR(options, ds) for ds in dataset_names]
+        dataset_list = [DatasetSDPose(options, ds) for ds in dataset_names]
         train_ds = ConcatDataset(dataset_list)
 
         return train_ds
@@ -435,7 +435,7 @@ class HMRTrainer(pl.LightningModule):
         val_datasets = []
         for dataset_name in datasets:
             val_datasets.append(
-                DatasetHMR(
+                DatasetSDPose(
                     options=self.hparams.DATASET,
                     dataset=dataset_name,
                     is_train=False,
