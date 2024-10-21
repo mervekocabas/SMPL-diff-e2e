@@ -229,7 +229,6 @@ class HMRTrainer(pl.LightningModule):
             ds_name = ds.dataset
             ds_idx = val_dataset_names.index(ds.dataset)
             idxs = np.where(dataset_index == ds_idx)
-            import ipdb ; ipdb.set_trace()
             loss_dict[ds_name + '_mpjpe'] = list(val_mpjpe[idxs])
             loss_dict[ds_name + '_pampjpe'] = list(val_pampjpe[idxs])
             loss_dict[ds_name + '_pve'] = list(val_pve[idxs])
@@ -269,7 +268,7 @@ class HMRTrainer(pl.LightningModule):
                     val_log[ds_name + '_val_mpjpe'] = mpjpe
                     val_log[ds_name + '_val_pampjpe'] = pampjpe
                     val_log[ds_name + '_val_pve'] = pve
-
+        import ipdb ; ipdb.set_trace()
         self.log('val_loss', val_log[self.val_ds[0].dataset + '_val_pampjpe'], logger=True, sync_dist=True)
         self.log('val_loss_mpjpe', val_log[self.val_ds[0].dataset + '_val_mpjpe'], logger=True, sync_dist=True)
         for k, v in val_log.items():
