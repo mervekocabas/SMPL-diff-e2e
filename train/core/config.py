@@ -24,6 +24,7 @@ DATASET_FOLDERS = {
 
     'agora-bfh': 'data/training_images/images/',
     'agora-body': 'data/training_images/images/',
+    'merve128': 'data/training_images/20221010_3-10_500_batch01hand_zoom_suburb_d_6fps/png',
     'zoom-suburbd': 'data/training_images/20221010_3-10_500_batch01hand_zoom_suburb_d_6fps/png',
     'closeup-suburba': 'data/training_images/20221011_1_250_batch01hand_closeup_suburb_a_6fps/png',
     'closeup-suburbb': 'data/training_images/20221011_1_250_batch01hand_closeup_suburb_b_6fps/png',
@@ -81,7 +82,8 @@ DATASET_FILES = [
         'agora-bfh': 'data/training_labels/all_npz_12_training/agora-bfh.npz',
         'agora-body': 'data/training_labels/all_npz_12_training/agora-body.npz',
         '3dpw-train-smplx': 'data/training_labels/3dpw_train_smplx.npz',
-
+        
+        'merve128': 'data/training_labels/all_npz_12_training/subset_data_128.npz',
         'zoom-suburbd': 'data/training_labels/all_npz_12_training/20221010_3-10_500_batch01hand_zoom_suburb_d_6fps.npz',
         'closeup-suburba': 'data/training_labels/all_npz_12_training/20221011_1_250_batch01hand_closeup_suburb_a_6fps.npz',
         'closeup-suburbb': 'data/training_labels/all_npz_12_training/20221011_1_250_batch01hand_closeup_suburb_b_6fps.npz',
