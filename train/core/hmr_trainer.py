@@ -104,8 +104,8 @@ class HMRTrainer(pl.LightningModule):
         if self.training_wp_vis:
             self.weak_perspective_projection(batch, pred, batch_nb, dataloader_nb)
         if self.training_fp_vis:
-            if self.global_step % 10 == 0:
-                self.perspective_projection(batch, pred, batch_nb)
+            #if self.global_step % 10 == 0:
+            self.perspective_projection(batch, pred, batch_nb)
         if self.training_mesh_vis:
             self.visualize_mesh(batch, pred, batch_nb, dataloader_nb, pred['smplx_vertices'], batch['vertices'])
 
@@ -220,8 +220,8 @@ class HMRTrainer(pl.LightningModule):
         if self.testing_wp_vis:
             self.weak_perspective_projection(batch, pred, batch_nb, dataloader_nb)
         if self.testing_fp_vis:
-            if self.global_step % 10 == 0:
-                self.perspective_projection(batch, pred, batch_nb)
+            #if self.global_step % 10 == 0:
+            self.perspective_projection(batch, pred, batch_nb)
 
         loss_dict = {}
 
@@ -229,6 +229,7 @@ class HMRTrainer(pl.LightningModule):
             ds_name = ds.dataset
             ds_idx = val_dataset_names.index(ds.dataset)
             idxs = np.where(dataset_index == ds_idx)
+            import ipdb ; ipdb.set_trace()
             loss_dict[ds_name + '_mpjpe'] = list(val_mpjpe[idxs])
             loss_dict[ds_name + '_pampjpe'] = list(val_pampjpe[idxs])
             loss_dict[ds_name + '_pve'] = list(val_pve[idxs])
