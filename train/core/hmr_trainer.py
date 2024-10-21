@@ -26,6 +26,7 @@ class HMRTrainer(pl.LightningModule):
         super(HMRTrainer, self).__init__()
 
         self.hparams.update(hparams)
+
         self.model = HMR(
             backbone=self.hparams.MODEL.BACKBONE,
             img_res=self.hparams.DATASET.IMG_RES,
@@ -103,6 +104,7 @@ class HMRTrainer(pl.LightningModule):
         if self.training_wp_vis:
             self.weak_perspective_projection(batch, pred, batch_nb, dataloader_nb)
         if self.training_fp_vis:
+            #if self.global_step % 10 == 0:
             self.perspective_projection(batch, pred, batch_nb)
         if self.training_mesh_vis:
             self.visualize_mesh(batch, pred, batch_nb, dataloader_nb, pred['smplx_vertices'], batch['vertices'])
@@ -129,6 +131,7 @@ class HMRTrainer(pl.LightningModule):
         J_regressor_batch_smpl = self.J_regressor[None, :].expand(batch['img'].shape[0], -1, -1)
         pred = self(images, bbox_center=bbox_center, bbox_scale=bbox_scale, img_w=img_w, img_h=img_h)
         pred_cam_vertices = pred['vertices']
+        pred_cam_vertices = pred_cam_vertices.to("cuda:0")
         joint_mapper_gt = constants.J24_TO_J14
         joint_mapper_h36m = constants.H36M_TO_J14
 
@@ -139,6 +142,7 @@ class HMRTrainer(pl.LightningModule):
                 global_orient=batch['pose'][:, :3],
             )
             gt_cam_vertices = gt_out_cam.vertices
+            gt_cam_vertices = gt_cam_vertices.to("cuda:0")
             gt_keypoints_3d = gt_out_cam.joints[:, :24]
             pred_keypoints_3d = pred['joints3d'][:, :24]
             gt_pelvis = (gt_keypoints_3d[:, [1], :] + gt_keypoints_3d[:, [2], :]) / 2.0
@@ -151,9 +155,10 @@ class HMRTrainer(pl.LightningModule):
         elif 'rich' in dataset_names[0]:
             # For rich vertices are generated in dataset.py because gender is needed
             gt_cam_vertices = batch['vertices']
+            gt_cam_vertices = gt_cam_vertices.to("cuda:0")
             gt_keypoints_3d = batch['joints']
-            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1), pred_cam_vertices)
-            pred_keypoints_3d = torch.matmul(self.smpl.J_regressor, pred_cam_vertices)
+            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1).to("cuda:0"), pred_cam_vertices)
+            pred_keypoints_3d = torch.matmul(self.smpl.J_regressor.to("cuda:0"), pred_cam_vertices)
             gt_pelvis = (gt_keypoints_3d[:, [1], :] + gt_keypoints_3d[:, [2], :]) / 2.0
             pred_pelvis = (pred_keypoints_3d[:, [1], :] + pred_keypoints_3d[:, [2], :]) / 2.0
             pred_keypoints_3d = pred_keypoints_3d - pred_pelvis
@@ -162,13 +167,14 @@ class HMRTrainer(pl.LightningModule):
             gt_cam_vertices = gt_cam_vertices - gt_pelvis
         elif 'h36m' in dataset_names[0]:
             gt_cam_vertices = batch['vertices']
+            gt_cam_vertices = gt_cam_vertices.to("cuda:0")
             # # Get 14 predicted joints from the mesh
             gt_keypoints_3d = batch['joints']
             gt_keypoints_3d = gt_keypoints_3d[:, joint_mapper_gt, :-1]
             gt_keypoints_3d = gt_keypoints_3d - ((gt_keypoints_3d[:, 2, :] + gt_keypoints_3d[:, 3, :]) / 2).unsqueeze(1)
-            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1).cuda(), pred_cam_vertices)
+            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1).to("cuda:0"), pred_cam_vertices)
             # # Get 14 predicted joints from the mesh
-            pred_keypoints_3d = torch.matmul(J_regressor_batch_smpl, pred_cam_vertices)
+            pred_keypoints_3d = torch.matmul(J_regressor_batch_smpl.to("cuda:0"), pred_cam_vertices)
             # pred_pelvis = pred_keypoints_3d[:, [0], :].clone()
             pred_keypoints_3d = pred_keypoints_3d[:, joint_mapper_h36m, :]
             # pred_keypoints_3d = pred_keypoints_3d - pred_pelvis
@@ -176,16 +182,17 @@ class HMRTrainer(pl.LightningModule):
         else:
             # For 3dpw vertices are generated in dataset.py because gender is needed
             gt_cam_vertices = batch['vertices']
+            gt_cam_vertices = gt_cam_vertices.to("cuda:0")
             # Get 14 predicted joints from the mesh
-            gt_keypoints_3d = torch.matmul(J_regressor_batch_smpl, gt_cam_vertices)
+            gt_keypoints_3d = torch.matmul(J_regressor_batch_smpl.to("cuda:0"), gt_cam_vertices)
             gt_pelvis = gt_keypoints_3d[:, [0], :].clone()
             gt_keypoints_3d = gt_keypoints_3d[:, joint_mapper_h36m, :]
             gt_keypoints_3d = gt_keypoints_3d - gt_pelvis
             gt_cam_vertices = gt_cam_vertices - gt_pelvis
             # Convert predicted vertices to SMPL Fromat
-            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1), pred_cam_vertices)
+            pred_cam_vertices = torch.matmul(self.smplx2smpl.repeat(batch_size, 1, 1).to("cuda:0"), pred_cam_vertices)
             # Get 14 predicted joints from the mesh
-            pred_keypoints_3d = torch.matmul(J_regressor_batch_smpl, pred_cam_vertices)
+            pred_keypoints_3d = torch.matmul(J_regressor_batch_smpl.to("cuda:0"), pred_cam_vertices)
             pred_pelvis = pred_keypoints_3d[:, [0], :].clone()
             pred_keypoints_3d = pred_keypoints_3d[:, joint_mapper_h36m, :]
             pred_keypoints_3d = pred_keypoints_3d - pred_pelvis
@@ -213,6 +220,7 @@ class HMRTrainer(pl.LightningModule):
         if self.testing_wp_vis:
             self.weak_perspective_projection(batch, pred, batch_nb, dataloader_nb)
         if self.testing_fp_vis:
+            #if self.global_step % 10 == 0:
             self.perspective_projection(batch, pred, batch_nb)
 
         loss_dict = {}
@@ -221,6 +229,7 @@ class HMRTrainer(pl.LightningModule):
             ds_name = ds.dataset
             ds_idx = val_dataset_names.index(ds.dataset)
             idxs = np.where(dataset_index == ds_idx)
+            import ipdb ; ipdb.set_trace()
             loss_dict[ds_name + '_mpjpe'] = list(val_mpjpe[idxs])
             loss_dict[ds_name + '_pampjpe'] = list(val_pampjpe[idxs])
             loss_dict[ds_name + '_pve'] = list(val_pve[idxs])
@@ -386,6 +395,13 @@ class HMRTrainer(pl.LightningModule):
     def configure_optimizers(self):
         if self.hparams.OPTIMIZER.TYPE == 'sgd':
             return torch.optim.SGD(self.parameters(), lr=self.hparams.OPTIMIZER.LR, momentum=0.9)
+        elif self.hparams.OPTIMIZER.TYPE == 'AdamW':
+            print('Using AdamW optimizer')
+            return torch.optim.AdamW(
+                self.parameters(),
+                lr=self.hparams.OPTIMIZER.LR,
+                weight_decay=self.hparams.OPTIMIZER.WD,
+            )
         else:
             return torch.optim.Adam(
                 self.parameters(),
