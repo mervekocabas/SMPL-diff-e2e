@@ -268,7 +268,7 @@ class HMRTrainer(pl.LightningModule):
                     val_log[ds_name + '_val_mpjpe'] = mpjpe
                     val_log[ds_name + '_val_pampjpe'] = pampjpe
                     val_log[ds_name + '_val_pve'] = pve
-        import ipdb ; ipdb.set_trace()
+    
         self.log('val_loss', val_log[self.val_ds[0].dataset + '_val_pampjpe'], logger=True, sync_dist=True)
         self.log('val_loss_mpjpe', val_log[self.val_ds[0].dataset + '_val_mpjpe'], logger=True, sync_dist=True)
         for k, v in val_log.items():
